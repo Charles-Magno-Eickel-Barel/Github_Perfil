@@ -5,23 +5,36 @@ import styles from './ReposList.module.css';
 const ReposList = ({ nomeUsuario}) => {
     const [repos, setRepos] = useState([]);
     const [estaCarregando, setEstaCarregando] = useState(true);
-
+    const [erro, setDeuErro] = useState(false);
     useEffect(() => {
         setEstaCarregando(true);
+        setDeuErro(false)
         fetch(`https://api.github.com/users/${nomeUsuario}/repos`)
-        .then(res => res.json())
+        
+        .then(res => {
+            if (res.ok) {
+                return res.json()
+            }
+            throw new Error("Não foi possivel encontrar o perfil do usuário");
+        })
         .then(resJson => {
             setTimeout(() => {
                 setEstaCarregando(false);
                 setRepos(resJson);
             }, 3000);
-            
         })
+        .catch((e) => {
+            setDeuErro(true);
+            setEstaCarregando(false);
+        }) 
     }, [nomeUsuario]);
     return (
         <div className="container">
+        
         {estaCarregando ? (
             <h1>Carregando...</h1>
+        ): erro ? (
+            <h1 className={styles.listItem}>Não foi possivel encontrar o perfil do usuário</h1>
         ): (
         <ul className={styles.list}>
             {/* {repos.map(repositorio => ( */}
